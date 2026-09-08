@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Comics & Projects</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <header>
+        <div class="header-container">
+            <h1>My Creative Space</h1>
+            <nav>
+                <a href="#comics">Comics</a>
+                <a href="#projects">Projects</a>
+            </nav>
+        </div>
+    </header>
+
+    <main>
+        <!-- Comics Section -->
+        <section id="comics">
+            <h2>Latest Comics</h2>
+            <p>Read my original comic series below.</p>
+            
+            <div class="grid-container" id="comic-grid">
+                <!-- Comic Card 1 -->
+                <div class="card">
+                    <!-- Replace with your actual image file name -->
+                    <div class="image-placeholder" style="background-color: #ff9a9e;">Image goes here</div>
+                    <div class="card-content">
+                        <h3>Chapter 1: The Beginning</h3>
+                        <p>A brief description of this chapter or artwork.</p>
+                        <a href="#" class="btn">Read Comic</a>
+                    </div>
+                </div>
+                
+                <!-- Comic Card 2 -->
+                <div class="card">
+                    <div class="image-placeholder" style="background-color: #a18cd1;">Image goes here</div>
+                    <div class="card-content">
+                        <h3>Chapter 2: The Journey</h3>
+                        <p>A brief description of this chapter or artwork.</p>
+                        <a href="#" class="btn">Read Comic</a>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Education/Projects Section -->
+        <section id="projects" class="alt-bg">
+            <h2>Educational Projects</h2>
+            <p>Notes, source code, and project files.</p>
+            
+            <div class="grid-container">
+                <!-- Project Card 1 -->
+                <div class="card project-card">
+                    <div class="card-content">
+                        <h3>Major Project: Electronics</h3>
+                        <p>Documentation and source code for my latest hardware/software build.</p>
+                        <a href="projects/track_project" download class="btn btn-outline">Download ZIP</a>
+                        <a href="projects/reference.pdf" target="_blank" class="btn btn-outline">View PDF</a>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <p>&copy; 2026 Your Name. Hand-coded with coffee and terminal.</p>
+    </footer>
+<script>
+    // --- CONFIGURE THIS ---
+    const username = "Prateek1369"; // Your GitHub username
+    const repo = "my-portfolio";             // The name of your repository
+
+    // Function to fetch files and build HTML cards
+    function loadFiles(folderName, containerId, isProject) {
+        fetch(`https://api.github.com/repos/${username}/${repo}/contents/${folderName}`)
+            .then(response => response.json())
+            .then(files => {
+                const grid = document.getElementById(containerId);
+                grid.innerHTML = ""; // Clear the loading text
+                
+                files.forEach(file => {
+                    // Clean up the filename for the title (e.g., "chapter-1.jpg" -> "chapter 1")
+                    const title = file.name.split('.')[0].replace(/-/g, ' '); 
+                    
+                    // IF COMICS FOLDER: Look for images and build comic cards
+                    if (!isProject && file.name.match(/\.(jpg|jpeg|png|webp)$/i)) {
+                        grid.innerHTML += `
+                        <div class="card">
+                            <img src="${file.download_url}" alt="${title}" style="width: 100%; height: 200px; object-fit: cover; border-radius: 8px 8px 0 0;">
+                            <div class="card-content">
+                                <h3 style="text-transform: capitalize;">${title}</h3>
+                                <a href="${file.download_url}" target="_blank" class="btn">View Comic</a>
+                            </div>
+                        </div>`;
+                    } 
+                    // IF PROJECTS FOLDER: Look for ZIPs or PDFs and build project cards
+                    else if (isProject && file.name.match(/\.(zip|pdf|rar|tar)$/i)) {
+                        grid.innerHTML += `
+                        <div class="card project-card">
+                            <div class="card-content">
+                                <h3 style="text-transform: capitalize;">${title}</h3>
+                                <a href="${file.download_url}" class="btn btn-outline">Download File</a>
+                            </div>
+                        </div>`;
+                    }
+                });
+            })
+            .catch(error => {
+                document.getElementById(containerId).innerHTML = "<p>Couldn't load files automatically. Check your GitHub username in the script.</p>";
+            });
+    }
+
+    // Tell the script to scan both folders
+    loadFiles("comics", "comic-grid", false);
+    loadFiles("projects", "project-grid", true);
+</script>
+</body>
+</html>
