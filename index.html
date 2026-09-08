@@ -3,104 +3,95 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>My Comics & Projects</title>
+    <title>My Manga Space</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-
+    <!-- Navbar -->
     <header>
-        <div class="header-container">
-            <h1>My Creative Space</h1>
+        <div class="nav-container">
+            <div class="logo">MangaSpace</div>
             <nav>
-                <a href="#comics">Comics</a>
-                <a href="#projects">Projects</a>
+                <a href="#">Home</a>
+                <a href="#">Latest Comics</a>
             </nav>
         </div>
     </header>
 
+    <!-- Main Grid -->
     <main>
-        <!-- Comics Section -->
-        <section id="comics">
-            <h2>Latest Comics</h2>
-            <p>Read my original comic series below.</p>
-            
-            <div class="grid-container" id="comic-grid">
-                <!-- Comic Card 1 -->
-                <div class="card">
-                    <!-- Replace with your actual image file name -->
-                    <div class="image-placeholder" style="background-color: #ff9a9e;">Image goes here</div>
-                    <div class="card-content">
-                        <h3>Chapter 1: The Beginning</h3>
-                        <p>A brief description of this chapter or artwork.</p>
-                        <a href="#" class="btn">Read Comic</a>
-                    </div>
-                </div>
-                
-                <!-- Comic Card 2 -->
-                <div class="card">
-                    <div class="image-placeholder" style="background-color: #a18cd1;">Image goes here</div>
-                    <div class="card-content">
-                        <h3>Chapter 2: The Journey</h3>
-                        <p>A brief description of this chapter or artwork.</p>
-                        <a href="#" class="btn">Read Comic</a>
-                    </div>
-                </div>
-            </div>
-        </section>
-
+        <h2 class="section-title">Latest Updates</h2>
+        <!-- This grid is populated automatically by GitHub -->
+        <div class="manga-grid" id="comic-grid">
+            <p style="color:#aaa; padding: 20px;">Loading comics automatically...</p>
+        </div>
     </main>
 
-    <footer>
-        <p>&copy; 2026 Your Name. Hand-coded with coffee and terminal.</p>
-    </footer>
-<script>
-    // --- CONFIGURE THIS ---
-    const username = "Prateek1369"; // Your GitHub username
-    const repo = "my-portfolio";             // The name of your repository
+    <!-- Cinematic Reader Modal (Hidden by default) -->
+    <div id="reader-modal" class="modal">
+        <div class="modal-header">
+            <h3 id="reader-title">Chapter Title</h3>
+            <button class="close-btn" onclick="closeReader()">Close Reader (X)</button>
+        </div>
+        <!-- The comic image will be injected here -->
+        <div class="modal-content" id="reader-content"></div>
+    </div>
 
-    // Function to fetch files and build HTML cards
-    function loadFiles(folderName, containerId, isProject) {
-        fetch(`https://api.github.com/repos/${username}/${repo}/contents/${folderName}`)
-            .then(response => response.json())
-            .then(files => {
-                const grid = document.getElementById(containerId);
-                grid.innerHTML = ""; // Clear the loading text
-                
-                files.forEach(file => {
-                    // Clean up the filename for the title (e.g., "chapter-1.jpg" -> "chapter 1")
-                    const title = file.name.split('.')[0].replace(/-/g, ' '); 
+    <!-- Automation Script -->
+    <script>
+        // --- CONFIGURE THIS ---
+        const username = "Prateek1369"; // <-- Change this to Prateek1369
+        const repo = "my-portfolio";
+
+        // Opens the dark mode reader on the screen
+        function openReader(imgUrl, title) {
+            document.getElementById('reader-modal').style.display = 'block';
+            document.getElementById('reader-title').innerText = title;
+            document.getElementById('reader-content').innerHTML = `<img src="${imgUrl}" alt="${title}">`;
+            document.body.style.overflow = 'hidden'; // Stop the background from scrolling
+        }
+
+        // Closes the reader
+        function closeReader() {
+            document.getElementById('reader-modal').style.display = 'none';
+            document.getElementById('reader-content').innerHTML = '';
+            document.body.style.overflow = 'auto'; // Restore scrolling
+        }
+
+        // Fetch files from GitHub
+        function loadFiles() {
+            fetch(`https://api.github.com/repos/${username}/${repo}/contents/comics`)
+                .then(response => response.json())
+                .then(files => {
+                    const grid = document.getElementById('comic-grid');
+                    grid.innerHTML = "";
                     
-                    // IF COMICS FOLDER: Look for images and build comic cards
-                    if (!isProject && file.name.match(/\.(jpg|jpeg|png|webp)$/i)) {
-                        grid.innerHTML += `
-                        <div class="card">
-                            <img src="${file.download_url}" alt="${title}" style="width: 100%; height: 200px; object-fit: cover; border-radius: 8px 8px 0 0;">
-                            <div class="card-content">
-                                <h3 style="text-transform: capitalize;">${title}</h3>
-                                <a href="${file.download_url}" target="_blank" class="btn">View Comic</a>
-                            </div>
-                        </div>`;
-                    } 
-                    // IF PROJECTS FOLDER: Look for ZIPs or PDFs and build project cards
-                    else if (isProject && file.name.match(/\.(zip|pdf|rar|tar)$/i)) {
-                        grid.innerHTML += `
-                        <div class="card project-card">
-                            <div class="card-content">
-                                <h3 style="text-transform: capitalize;">${title}</h3>
-                                <a href="${file.download_url}" class="btn btn-outline">Download File</a>
-                            </div>
-                        </div>`;
-                    }
+                    files.forEach(file => {
+                        if (file.name.match(/\.(jpg|jpeg|png|webp)$/i)) {
+                            // Clean up the name for the title
+                            const title = file.name.split('.')[0].replace(/-/g, ' '); 
+                            
+                            // Generate the Manga Card UI
+                            grid.innerHTML += `
+                            <div class="manga-card" onclick="openReader('${file.download_url}', '${title}')">
+                                <div class="cover-wrapper">
+                                    <img src="${file.download_url}" alt="${title}" class="manga-cover">
+                                    <div class="chapter-badge">New</div>
+                                </div>
+                                <div class="manga-info">
+                                    <h3 class="manga-title">${title}</h3>
+                                </div>
+                            </div>`;
+                        }
+                    });
+                })
+                .catch(error => {
+                    document.getElementById('comic-grid').innerHTML = "<p>Couldn't load files. Check your GitHub username in the code.</p>";
                 });
-            })
-            .catch(error => {
-                document.getElementById(containerId).innerHTML = "<p>Couldn't load files automatically. Check your GitHub username in the script.</p>";
-            });
-    }
+        }
 
-    // Tell the script to scan both folders
-    loadFiles("comics", "comic-grid", false);
-    loadFiles("projects", "project-grid", true);
-</script>
+        // Run the script
+        loadFiles();
+    </script>
 </body>
 </html>
